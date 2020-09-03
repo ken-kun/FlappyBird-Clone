@@ -20,6 +20,7 @@ struct PhysicsType {
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var ground = SKSpriteNode()
+    var ceiling = SKSpriteNode()
     var background = SKSpriteNode()
     var flappyBird = SKSpriteNode()
     var pipePair = SKNode()
@@ -76,28 +77,44 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     {
         self.physicsWorld.contactDelegate = self
         
+        for i in 0..<2{
+            background = SKSpriteNode(imageNamed: "background.png")
+            background.setScale(3)
+            background.anchorPoint = CGPoint(x: 0, y: 0)
+            background.position = CGPoint(x: CGFloat(i) * self.frame.width, y: 0)
+            background.name = "background"
+            self.addChild(background)
+        }
         
         
-        background = SKSpriteNode(imageNamed: "background.png")
-        background.setScale(3)
-        background.position = CGPoint(x: self.frame.width/2, y: background.frame.height/1.5)
-        self.addChild(background)
+        for i in 0..<2{
+             ground = SKSpriteNode(imageNamed: "ground.png")
+             ground.setScale(3)
+            ground.anchorPoint = CGPoint(x: 0, y: 0.5)
+             ground.position = CGPoint(x: CGFloat(i) * self.frame.width, y: 0 + ground.frame.height/3)
+             ground.physicsBody = SKPhysicsBody(rectangleOf: ground.size)
+             ground.physicsBody?.categoryBitMask = PhysicsType.ground
+             ground.physicsBody?.collisionBitMask = PhysicsType.flappybird
+             ground.physicsBody?.contactTestBitMask = PhysicsType.flappybird
+             ground.physicsBody?.affectedByGravity = false
+             ground.physicsBody?.isDynamic = false
+             ground.name = "ground"
+                   
+             ground.zPosition = 3
+             self.addChild(ground)
+        }
+                
         
-        
-        
-        
-        ground = SKSpriteNode(imageNamed: "ground.png")
-        ground.setScale(3)
-        ground.position = CGPoint(x: self.frame.width/2, y: 0 + ground.frame.height/3)
-        ground.physicsBody = SKPhysicsBody(rectangleOf: ground.size)
-        ground.physicsBody?.categoryBitMask = PhysicsType.ground
-        ground.physicsBody?.collisionBitMask = PhysicsType.flappybird
-        ground.physicsBody?.contactTestBitMask = PhysicsType.flappybird
-        ground.physicsBody?.affectedByGravity = false
-        ground.physicsBody?.isDynamic = false
-        
-        ground.zPosition = 3
-        self.addChild(ground)
+        for i in 0..<2{
+             ceiling = SKSpriteNode(imageNamed: "ceiling.png")
+            ceiling.anchorPoint = CGPoint(x: 0, y: 0.5)
+             ceiling.setScale(3)
+             //ceiling.zRotation = .pi
+             ceiling.position = CGPoint(x: CGFloat(i) * self.frame.width, y: ceiling.frame.height + 650)
+             ceiling.zPosition = 3
+            ceiling.name = "ceiling"
+             self.addChild(ceiling)
+        }
         
         
         TextureAtlas = SKTextureAtlas(named: "flappybird")
@@ -280,6 +297,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             audioPlayer.play()
             death = true
             addButton()
+            
+            
         }
         
         if(firstBody.categoryBitMask == PhysicsType.flappybird && secondBody.categoryBitMask == PhysicsType.pipe || firstBody.categoryBitMask == PhysicsType.pipe && secondBody.categoryBitMask == PhysicsType.flappybird){
@@ -287,6 +306,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             audioPlayer.play()
             death = true
             addButton()
+            
         }
         
     }
@@ -324,7 +344,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         else {
             
             if(death == true){
-                
+                audioPlayer.stop()
             }
             else {
                 flappyBird.physicsBody?.velocity = CGVector(dx: 0,dy: 0)
@@ -420,6 +440,45 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
-        
+        if(gameStart == true){
+            if death == false {
+                enumerateChildNodes(withName: "background", using: ({
+                    (node, error) in
+                    var bg = node as! SKSpriteNode
+                    bg.position = CGPoint(x: bg.position.x - 2, y: bg.position.y)
+                    
+                    if bg.position.x <= -bg.size.width {
+                        
+                        bg.position = CGPoint(x: bg.position.x + bg.size.width * 1.9, y: bg.position.y)
+                    }
+                    
+                }))
+                
+                
+                enumerateChildNodes(withName: "ground", using: ({
+                    (node, error) in
+                    var g = node as! SKSpriteNode
+                    g.position = CGPoint(x: g.position.x - 2, y: g.position.y)
+                    
+                    if g.position.x <= -g.size.width {
+                        
+                        g.position = CGPoint(x:g.position.x + g.size.width * 1.9, y: g.position.y)
+                    }
+                    
+                }))
+                
+                enumerateChildNodes(withName: "ceiling", using: ({
+                    (node, error) in
+                    var c = node as! SKSpriteNode
+                    c.position = CGPoint(x: c.position.x - 2, y: c.position.y)
+                    
+                    if c.position.x <= -c.size.width {
+                        
+                        c.position = CGPoint(x:c.position.x + c.size.width * 1.8, y: c.position.y)
+                    }
+                    
+                }))
+            }
+        }
     }
 }
